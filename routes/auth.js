@@ -1,6 +1,5 @@
 const express = require("express");
 const router  = express.Router();
-const passport = require("passport");
 const {signup,signin,verify,isAuthenticated} = require("../controllers/auth");
 
 router.post("/signin",signin);
