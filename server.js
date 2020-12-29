@@ -16,7 +16,6 @@ mongoose.connect(process.env.MongoDB_URI|| "mongodb://localhost/project", {
   useUnifiedTopology: true,
 });
 app.use(morgan("tiny"));
-
 mongoose.set("useFindAndModify", false);
 app.set("view engine", "ejs");
 mongoose.connection

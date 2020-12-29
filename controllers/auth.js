@@ -6,12 +6,18 @@ exports.signin = function(req,res){
   User.findOne({email:email},function(err, user){
     if(err){
       console.log(user);
+      res.json({message:"not found"});
+      return;
     }
     if(!user){
       console.log("no user  found");
+      res.json({message:"no user found"})
+      return;
     }
     if(user.active == 0){
       console.log("user need to be verified");
+      res.json({message:"verify first"});
+      return;
     }
     if(user.active==1){
     const value = bcrypt.compareSync(password,user.password);
