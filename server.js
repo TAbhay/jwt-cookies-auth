@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true}));
 app.use(express.json());
 app.use(cors());
 app.use(morgan('tiny'));
-mongoose.connect("mongodb://localhost/project", {
+mongoose.connect(process.env.MongoDB_URI|| "mongodb://localhost/project", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
