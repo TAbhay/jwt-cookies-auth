@@ -23,10 +23,11 @@ exports.signin = function(req,res){
     const value = bcrypt.compareSync(password,user.password);
       if (!value) {
         console.log("noooo");
+        return;
       }
       if(value){
         // Here we can generate a cookie with token inside using jwt
-        // But we are using a verification token which we will put in headers
+        // But we can also use a verification token which we will put in headers
         username = user.username;
         console.log(username);
         jwt.sign({username},"Abhayhasnosecret",function(err, token){
@@ -35,7 +36,8 @@ exports.signin = function(req,res){
           }
           else{
             console.log(token);
-          res.json({token});
+            res.cookie("session_token", token, {expire: 360000 + Date.now(), secure:false});
+             // res.json({token});
         }
         });
       }
@@ -66,19 +68,14 @@ exports.signup = function(req,res){
         }
       });
     }
-    //if(user.active == 0){
-    //  console.log("user exist but not verified");
-    //}
-    //if(user.active==1){
-    //  console.log("user exists.. please signin");
-  //  }
+
 
   });
 };
 exports.verify = function(req, res){
   // You can verify user by credentials(like token or randomnumbers) send via email
   // link - `${process.env.CLIENT_URL}/verify?token=${token}&email=${email}`
-    const email = req.query.email;
+  const email = req.query.email;
   User.findOne({email:email},function(err, user){
     if (err) {
       console.log(err);
@@ -94,7 +91,28 @@ exports.verify = function(req, res){
 // Authorization: Bearer <access_token>
 
 exports.isAuthenticated = function(req,res,next){
-  const bearerHeader = req.headers['authorization'];
+  // auth using JWTs in a cookie
+ const token = req.cookies.session_token;
+  if (!token) {
+   return res.status(401).json({ message: "You have to login" });
+    }
+  const decodedToken = jwt.verify(token, process.env.TokenJwt);
+  const userId = decodedToken._id;
+ User.findById(userId, function (err, result) {
+  if (err) {
+    res.json({
+      success: false,
+      message: "UserNotLoggedIn"
+    });
+  } else {
+      res.json({
+      success: true,
+    });
+  }
+ });
+  // Auth using JWTs in header
+
+  /*const bearerHeader = req.headers['authorization'];
   if(typeof bearerHeader !== 'undefined') {
   const bearer = bearerHeader.split(' ');
   const bearerToken = bearer[1];
@@ -111,5 +129,12 @@ exports.isAuthenticated = function(req,res,next){
   else{
   // Forbidden
   res.sendStatus(403);
-}
+} */
+};
+exports.logout = function (req, res) {
+  res.clearCookie("session_token");
+  res.json({
+    success: true,
+    message: "Logged out Succesfully!",
+  });
 };
